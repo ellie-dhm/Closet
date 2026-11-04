@@ -1,0 +1,80 @@
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.75rem 0;
+  background: var(--bg);
+}
+
+.filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    transform 0.1s;
+}
+.chip span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.chip:hover {
+  border-color: var(--muted);
+}
+.chip:active {
+  transform: scale(0.97);
+}
+
+.chip--active,
+.chip--active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.chip--active span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.filters select {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.filters__clear {
+  padding: 0.4rem;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+.filters__clear:hover {
+  color: var(--text);
+}
