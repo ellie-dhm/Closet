@@ -79,7 +79,7 @@ The app runs as two processes, so you need two terminals.
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/ellie-dhm/closet.git
+git clone https://github.com/ellie-dhm/Closet.git
 cd closet
 ```
 
