@@ -132,7 +132,9 @@ export default function ItemForm() {
       <div className="item-form__image">
         <span>Photo</span>
         <div className="item-form__preview">
-          {form.image_url ? (
+          {uploading ? (
+            <div className="skeleton skeleton--fill" />
+          ) : form.image_url ? (
             <img src={imageSrc(form.image_url)} alt="Preview" />
           ) : (
             <span>No photo yet</span>

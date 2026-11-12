@@ -1,3 +1,4 @@
+import { Shirt, SearchX } from "lucide-react";
 import { useEffect } from "react";
 import { useItemsStore } from "./itemsStore";
 import { useUiStore } from "./uiStore";
@@ -5,6 +6,7 @@ import { useVisibleItems } from "./useVisibleItems";
 import ItemForm from "./components/ItemForm";
 import ItemCard from "./components/ItemCard";
 import FilterBar from "./components/FilterBar";
+import EmptyState from "./components/EmptyState";
 import "./styles/App.css";
 
 function App() {
@@ -63,22 +65,20 @@ function App() {
                 <div key={i} className="skeleton" />
               ))}
             </div>
-          ) : loadError ? (
-            <div className="banner banner--error">
-              {loadError}{" "}
-              <button className="btn" onClick={load}>
-                Retry
-              </button>
-            </div>
           ) : itemsCount === 0 ? (
-            <p className="empty">Your closet is empty. Add your first item.</p>
+            <EmptyState
+              icon={<Shirt size={36} strokeWidth={1.5} />}
+              title="Your closet is empty"
+              message="Add your first piece using the form to start building your wardrobe."
+            />
           ) : visibleItems.length === 0 ? (
-            <p className="empty">
-              No pieces match these filters.{" "}
-              <button className="btn" onClick={resetFilters}>
-                Clear filters
-              </button>
-            </p>
+            <EmptyState
+              icon={<SearchX size={36} strokeWidth={1.5} />}
+              title="No pieces match these filters"
+              message="Try a different combination, or clear the filters to see everything."
+              actionLabel="Clear filters"
+              onAction={resetFilters}
+            />
           ) : (
             <div className="app__grid">
               {visibleItems.map((item) => (
