@@ -65,6 +65,13 @@ function App() {
                 <div key={i} className="skeleton" />
               ))}
             </div>
+          ) : loadError ? (
+            <div className="banner banner--error">
+              {loadError}{" "}
+              <button className="btn" onClick={load}>
+                Retry
+              </button>
+            </div>
           ) : itemsCount === 0 ? (
             <EmptyState
               icon={<Shirt size={36} strokeWidth={1.5} />}
