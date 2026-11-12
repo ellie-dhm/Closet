@@ -1,17 +1,11 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { CATEGORIES, SEASONS } from "../types";
-import type { Category, Item, ItemInput, Season } from "../types";
+import type { Category, ItemInput, Season } from "../types";
 import { imageSrc, uploadImage } from "../api";
+import { useItemsStore } from "../itemsStore";
+import { useUiStore } from "../uiStore";
 import "../styles/ItemForm.css";
-
-interface Props {
-  editing: Item | null;
-  saving: boolean;
-  error: string | null;
-  onSubmit: (data: ItemInput) => Promise<boolean>;
-  onCancel: () => void;
-}
 
 const EMPTY: ItemInput = {
   name: "",
@@ -22,13 +16,14 @@ const EMPTY: ItemInput = {
   image_url: "",
 };
 
-export default function ItemForm({
-  editing,
-  saving,
-  error,
-  onSubmit,
-  onCancel,
-}: Props) {
+export default function ItemForm() {
+  const editing = useUiStore((s) => s.editing);
+  const cancelEdit = useUiStore((s) => s.cancelEdit);
+  const saving = useItemsStore((s) => s.saving);
+  const error = useItemsStore((s) => s.saveError);
+  const addItem = useItemsStore((s) => s.addItem);
+  const editItem = useItemsStore((s) => s.editItem);
+
   const [form, setForm] = useState<ItemInput>(
     editing
       ? {
@@ -68,9 +63,12 @@ export default function ItemForm({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const ok = await onSubmit(form);
+    const ok = editing ? await editItem(editing.id, form) : await addItem(form);
 
-    if (ok && !editing) setForm(EMPTY);
+    if (ok) {
+      if (editing) cancelEdit();
+      else setForm(EMPTY);
+    }
   }
 
   return (
@@ -183,7 +181,7 @@ export default function ItemForm({
           <button
             type="button"
             className="btn"
-            onClick={onCancel}
+            onClick={cancelEdit}
             disabled={saving}
           >
             Cancel

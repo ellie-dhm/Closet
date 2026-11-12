@@ -1,14 +1,14 @@
-import { CATEGORIES, DEFAULT_FILTERS, SEASONS } from "../types";
-import type { Category, Filters, Item, Season } from "../types";
+import { CATEGORIES, SEASONS } from "../types";
+import type { Category, Filters, Season } from "../types";
+import { useItemsStore } from "../itemsStore";
+import { useUiStore } from "../uiStore";
 import "../styles/FilterBar.css";
 
-interface Props {
-  items: Item[];
-  filters: Filters;
-  onChange: (filters: Filters) => void;
-}
-
-export default function FilterBar({ items, filters, onChange }: Props) {
+export default function FilterBar() {
+  const items = useItemsStore((s) => s.items);
+  const filters = useUiStore((s) => s.filters);
+  const setFilters = useUiStore((s) => s.setFilters);
+  const resetFilters = useUiStore((s) => s.resetFilters);
   // how many items per category, for the chip counts
   const counts: Partial<Record<Category, number>> = {};
   for (const item of items) {
@@ -31,7 +31,7 @@ export default function FilterBar({ items, filters, onChange }: Props) {
     filters.favoritesOnly;
 
   function set<K extends keyof Filters>(key: K, value: Filters[K]) {
-    onChange({ ...filters, [key]: value });
+    setFilters({ ...filters, [key]: value });
   }
 
   return (
@@ -88,10 +88,7 @@ export default function FilterBar({ items, filters, onChange }: Props) {
         </button>
 
         {isFiltered && (
-          <button
-            className="filters__clear"
-            onClick={() => onChange(DEFAULT_FILTERS)}
-          >
+          <button className="filters__clear" onClick={resetFilters}>
             Clear filters
           </button>
         )}
