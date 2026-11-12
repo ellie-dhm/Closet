@@ -1,71 +1,32 @@
-import { useState } from "react";
-import { useItems } from "./useItems";
+import { Shirt, SearchX } from "lucide-react";
+import { useEffect } from "react";
+import { useItemsStore } from "./itemsStore";
+import { useUiStore } from "./uiStore";
+import { useVisibleItems } from "./useVisibleItems";
 import ItemForm from "./components/ItemForm";
 import ItemCard from "./components/ItemCard";
 import FilterBar from "./components/FilterBar";
-import { DEFAULT_FILTERS } from "./types";
-import type { Filters, Item, ItemInput } from "./types";
+import EmptyState from "./components/EmptyState";
 import "./styles/App.css";
 
 function App() {
-  const {
-    items,
-    loading,
-    loadError,
-    load,
-    saving,
-    saveError,
-    setSaveError,
-    busyIds,
-    actionError,
-    addItem,
-    editItem,
-    removeItem,
-    toggleFavorite,
-  } = useItems();
+  const load = useItemsStore((s) => s.load);
+  const loading = useItemsStore((s) => s.loading);
+  const loadError = useItemsStore((s) => s.loadError);
+  const actionError = useItemsStore((s) => s.actionError);
+  const itemsCount = useItemsStore((s) => s.items.length);
+  const favoritesCount = useItemsStore(
+    (s) => s.items.filter((i) => i.favorite).length,
+  );
 
-  const [editing, setEditing] = useState<Item | null>(null);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const editingId = useUiStore((s) => s.editing?.id);
+  const resetFilters = useUiStore((s) => s.resetFilters);
 
-  const visibleItems = items.filter((item) => {
-    if (filters.category !== "all" && item.category !== filters.category)
-      return false;
-    // an item marked "all" is a year-round piece, so it matches every season
-    if (
-      filters.season !== "all" &&
-      item.season !== filters.season &&
-      item.season !== "all"
-    )
-      return false;
-    if (
-      filters.color !== "all" &&
-      item.color.trim().toLowerCase() !== filters.color
-    )
-      return false;
-    if (filters.favoritesOnly && !item.favorite) return false;
-    return true;
-  });
+  const visibleItems = useVisibleItems();
 
-  const favoritesCount = items.filter((i) => i.favorite).length;
-
-  async function handleSubmit(data: ItemInput) {
-    if (editing) {
-      const ok = await editItem(editing.id, data);
-      if (ok) setEditing(null);
-      return ok;
-    }
-    return addItem(data);
-  }
-
-  function startEdit(item: Item) {
-    setSaveError(null);
-    setEditing(item);
-  }
-
-  function cancelEdit() {
-    setSaveError(null);
-    setEditing(null);
-  }
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <div className="app">
@@ -78,7 +39,7 @@ function App() {
           <dl className="app__stats">
             <div>
               <dt>Pieces</dt>
-              <dd>{items.length}</dd>
+              <dd>{itemsCount}</dd>
             </div>
             <div>
               <dt>Favorites</dt>
@@ -88,19 +49,10 @@ function App() {
         )}
       </header>
 
-      {!loading && !loadError && items.length > 0 && (
-        <FilterBar items={items} filters={filters} onChange={setFilters} />
-      )}
+      {!loading && !loadError && itemsCount > 0 && <FilterBar />}
 
       <div className="app__layout">
-        <ItemForm
-          key={editing?.id ?? "new"}
-          editing={editing}
-          saving={saving}
-          error={saveError}
-          onSubmit={handleSubmit}
-          onCancel={cancelEdit}
-        />
+        <ItemForm key={editingId ?? "new"} />
 
         <main>
           {actionError && (
@@ -120,29 +72,24 @@ function App() {
                 Retry
               </button>
             </div>
-          ) : items.length === 0 ? (
-            <p className="empty">Your closet is empty. Add your first item.</p>
+          ) : itemsCount === 0 ? (
+            <EmptyState
+              icon={<Shirt size={36} strokeWidth={1.5} />}
+              title="Your closet is empty"
+              message="Add your first piece using the form to start building your wardrobe."
+            />
           ) : visibleItems.length === 0 ? (
-            <p className="empty">
-              No pieces match these filters.{" "}
-              <button
-                className="btn"
-                onClick={() => setFilters(DEFAULT_FILTERS)}
-              >
-                Clear filters
-              </button>
-            </p>
+            <EmptyState
+              icon={<SearchX size={36} strokeWidth={1.5} />}
+              title="No pieces match these filters"
+              message="Try a different combination, or clear the filters to see everything."
+              actionLabel="Clear filters"
+              onAction={resetFilters}
+            />
           ) : (
             <div className="app__grid">
               {visibleItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  busy={busyIds.includes(item.id)}
-                  onEdit={startEdit}
-                  onDelete={removeItem}
-                  onToggleFavorite={toggleFavorite}
-                />
+                <ItemCard key={item.id} item={item} />
               ))}
             </div>
           )}
