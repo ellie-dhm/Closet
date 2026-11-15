@@ -1,153 +1,125 @@
-import { useState } from "react";
-import { useItems } from "./useItems";
+import { useEffect, useState } from "react";
+import { Shirt, SearchX } from "lucide-react";
+import { useItemsStore } from "./itemsStore";
+import { useUiStore } from "./uiStore";
+import { useVisibleItems } from "./useVisibleItems";
 import ItemForm from "./components/ItemForm";
 import ItemCard from "./components/ItemCard";
 import FilterBar from "./components/FilterBar";
-import { DEFAULT_FILTERS } from "./types";
-import type { Filters, Item, ItemInput } from "./types";
+import EmptyState from "./components/EmptyState";
+import Dashboard from "./components/dashboard/Dashboard";
 import "./styles/App.css";
 
+type View = "wardrobe" | "dashboard";
+
 function App() {
-  const {
-    items,
-    loading,
-    loadError,
-    load,
-    saving,
-    saveError,
-    setSaveError,
-    busyIds,
-    actionError,
-    addItem,
-    editItem,
-    removeItem,
-    toggleFavorite,
-  } = useItems();
+  const [view, setView] = useState<View>("wardrobe");
+  const load = useItemsStore((s) => s.load);
+  const loading = useItemsStore((s) => s.loading);
+  const loadError = useItemsStore((s) => s.loadError);
+  const actionError = useItemsStore((s) => s.actionError);
+  const itemsCount = useItemsStore((s) => s.items.length);
+  const favoritesCount = useItemsStore(
+    (s) => s.items.filter((i) => i.favorite).length,
+  );
 
-  const [editing, setEditing] = useState<Item | null>(null);
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const editingId = useUiStore((s) => s.editing?.id);
+  const resetFilters = useUiStore((s) => s.resetFilters);
 
-  const visibleItems = items.filter((item) => {
-    if (filters.category !== "all" && item.category !== filters.category)
-      return false;
-    // an item marked "all" is a year-round piece, so it matches every season
-    if (
-      filters.season !== "all" &&
-      item.season !== filters.season &&
-      item.season !== "all"
-    )
-      return false;
-    if (
-      filters.color !== "all" &&
-      item.color.trim().toLowerCase() !== filters.color
-    )
-      return false;
-    if (filters.favoritesOnly && !item.favorite) return false;
-    return true;
-  });
+  const visibleItems = useVisibleItems();
 
-  const favoritesCount = items.filter((i) => i.favorite).length;
-
-  async function handleSubmit(data: ItemInput) {
-    if (editing) {
-      const ok = await editItem(editing.id, data);
-      if (ok) setEditing(null);
-      return ok;
-    }
-    return addItem(data);
-  }
-
-  function startEdit(item: Item) {
-    setSaveError(null);
-    setEditing(item);
-  }
-
-  function cancelEdit() {
-    setSaveError(null);
-    setEditing(null);
-  }
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
     <div className="app">
-      <header className="app__header">
-        <div>
-          <h1>Closet</h1>
-          <p>Your digital wardrobe</p>
-        </div>
-        {!loading && !loadError && (
-          <dl className="app__stats">
+      <nav className="view-btn">
+        <button
+          className={view === "wardrobe" ? "active" : ""}
+          onClick={() => setView("wardrobe")}
+        >
+          Wardrobe
+        </button>
+        <button
+          className={view === "dashboard" ? "active" : ""}
+          onClick={() => setView("dashboard")}
+        >
+          Dashboard
+        </button>
+      </nav>
+
+      {view === "wardrobe" ? (
+        <>
+          <header className="app__header">
             <div>
-              <dt>Pieces</dt>
-              <dd>{items.length}</dd>
+              <h1>Closet</h1>
+              <p>Your digital wardrobe</p>
             </div>
-            <div>
-              <dt>Favorites</dt>
-              <dd>{favoritesCount}</dd>
-            </div>
-          </dl>
-        )}
-      </header>
+            {!loading && !loadError && (
+              <dl className="app__stats">
+                <div>
+                  <dt>Pieces</dt>
+                  <dd>{itemsCount}</dd>
+                </div>
+                <div>
+                  <dt>Favorites</dt>
+                  <dd>{favoritesCount}</dd>
+                </div>
+              </dl>
+            )}
+          </header>
 
-      {!loading && !loadError && items.length > 0 && (
-        <FilterBar items={items} filters={filters} onChange={setFilters} />
-      )}
+          {!loading && !loadError && itemsCount > 0 && <FilterBar />}
 
-      <div className="app__layout">
-        <ItemForm
-          key={editing?.id ?? "new"}
-          editing={editing}
-          saving={saving}
-          error={saveError}
-          onSubmit={handleSubmit}
-          onCancel={cancelEdit}
-        />
+          <div className="app__layout">
+            <ItemForm key={editingId ?? "new"} />
 
-        <main>
-          {actionError && (
-            <div className="banner banner--error">{actionError}</div>
-          )}
+            <main>
+              {actionError && (
+                <div className="banner banner--error">{actionError}</div>
+              )}
 
-          {loading ? (
-            <div className="app__grid">
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="skeleton" />
-              ))}
-            </div>
-          ) : loadError ? (
-            <div className="banner banner--error">
-              {loadError}{" "}
-              <button className="btn" onClick={load}>
-                Retry
-              </button>
-            </div>
-          ) : items.length === 0 ? (
-            <p className="empty">Your closet is empty. Add your first item.</p>
-          ) : visibleItems.length === 0 ? (
-            <p className="empty">
-              No pieces match these filters.{" "}
-              <button
-                className="btn"
-                onClick={() => setFilters(DEFAULT_FILTERS)}
-              >
-                Clear filters
-              </button>
-            </p>
-          ) : (
-            <div className="app__grid">
-              {visibleItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  busy={busyIds.includes(item.id)}
-                  onEdit={startEdit}
-                  onDelete={removeItem}
-                  onToggleFavorite={toggleFavorite}
+              {loading ? (
+                <div className="app__grid">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div key={i} className="skeleton" />
+                  ))}
+                </div>
+              ) : loadError ? (
+                <div className="banner banner--error">
+                  {loadError}{" "}
+                  <button className="btn" onClick={load}>
+                    Retry
+                  </button>
+                </div>
+              ) : itemsCount === 0 ? (
+                <EmptyState
+                  icon={<Shirt size={36} strokeWidth={1.5} />}
+                  title="Your closet is empty"
+                  message="Add your first piece using the form to start building your wardrobe."
                 />
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
+              ) : visibleItems.length === 0 ? (
+                <EmptyState
+                  icon={<SearchX size={36} strokeWidth={1.5} />}
+                  title="No pieces match these filters"
+                  message="Try a different combination, or clear the filters to see everything."
+                  actionLabel="Clear filters"
+                  onAction={resetFilters}
+                />
+              ) : (
+                <div className="app__grid">
+                  {visibleItems.map((item) => (
+                    <ItemCard key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+            </main>
+          </div>
+        </>
+      ) : (
+        <Dashboard />
+      )}
     </div>
   );
 }

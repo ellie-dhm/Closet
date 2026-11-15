@@ -2,6 +2,7 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
+  overflow-x: clip;
 }
 .app__header {
   display: flex;
@@ -47,14 +48,6 @@
   color: var(--danger);
 }
 
-.empty {
-  text-align: center;
-  color: var(--muted);
-  padding: 3rem 1rem;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-}
-
 .skeleton {
   height: 280px;
   border-radius: var(--radius);
@@ -66,6 +59,11 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
+}
+
+.skeleton--fill {
+  width: 100%;
+  height: 100%;
 }
 
 .app__stats {
@@ -97,4 +95,30 @@
   .app__layout {
     grid-template-columns: 1fr;
   }
+}
+
+.view-btn {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.view-btn button {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.view-btn button:hover {
+  color: inherit;
+}
+.view-btn button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
 }

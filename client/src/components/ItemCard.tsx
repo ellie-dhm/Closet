@@ -1,23 +1,20 @@
 import { useState } from "react";
 import type { Item } from "../types";
 import { imageSrc } from "../api";
+import { useItemsStore } from "../itemsStore";
+import { useUiStore } from "../uiStore";
 import "../styles/ItemCard.css";
 
 interface Props {
   item: Item;
-  busy: boolean;
-  onEdit: (item: Item) => void;
-  onDelete: (id: number) => void;
-  onToggleFavorite: (item: Item) => void;
 }
 
-export default function ItemCard({
-  item,
-  busy,
-  onEdit,
-  onDelete,
-  onToggleFavorite,
-}: Props) {
+export default function ItemCard({ item }: Props) {
+  const busy = useItemsStore((s) => s.busyIds.includes(item.id));
+  const removeItem = useItemsStore((s) => s.removeItem);
+  const toggleFavorite = useItemsStore((s) => s.toggleFavorite);
+  const startEdit = useUiStore((s) => s.startEdit);
+
   const [confirming, setConfirming] = useState(false);
   const validColor = CSS.supports("color", item.color);
 
@@ -31,7 +28,7 @@ export default function ItemCard({
         <button
           className="item-card__fav"
           disabled={busy}
-          onClick={() => onToggleFavorite(item)}
+          onClick={() => toggleFavorite(item)}
           aria-label={
             item.favorite ? "Remove from favorites" : "Add to favorites"
           }
@@ -63,7 +60,7 @@ export default function ItemCard({
               className="btn btn--danger"
               onClick={() => {
                 setConfirming(false);
-                onDelete(item.id);
+                removeItem(item.id);
               }}
             >
               Confirm delete
@@ -74,7 +71,7 @@ export default function ItemCard({
           </>
         ) : (
           <>
-            <button className="btn" onClick={() => onEdit(item)}>
+            <button className="btn" onClick={() => startEdit(item)}>
               Edit
             </button>
             <button className="btn" onClick={() => setConfirming(true)}>

@@ -2,12 +2,14 @@ import express from "express";
 import cors from "cors";
 import { itemsRouter } from "./items.js";
 import { UPLOAD_DIR, uploadsRouter } from "./uploads.js";
+import statsRouter from "./routes/stats.js";
 
 const app = express();
 const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/stats", statsRouter);
 
 const LATENCY_MS = 400;
 app.use("/api", (_req, _res, next) => setTimeout(next, LATENCY_MS));
