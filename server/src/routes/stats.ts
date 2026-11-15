@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
   const params: string[] = [];
 
   if (season) {
-    where.push("season = ?");
+    where.push("(season = ? OR season = 'all')");
     params.push(season);
   }
   if (category) {
@@ -32,15 +32,17 @@ router.get("/", (req, res) => {
   const clause = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   // col is always a hardcoded string below, never user input
-  const group = (col: "category" | "season" | "color") =>
-    db
+  const group = (col: "category" | "season" | "color") => {
+    const expr = `COALESCE(NULLIF(${col}, ''), 'Unknown')`;
+    return db
       .prepare(
-        `SELECT COALESCE(NULLIF(${col}, ''), 'Unknown') AS name, COUNT(*) AS value
-         FROM clothing_items ${clause}
-         GROUP BY name
-         ORDER BY value DESC`,
+        `SELECT ${expr} AS name, COUNT(*) AS value
+       FROM clothing_items ${clause}
+       GROUP BY ${expr}
+       ORDER BY value DESC`,
       )
       .all(...params) as { name: string; value: number }[];
+  };
 
   const summary = db
     .prepare(
