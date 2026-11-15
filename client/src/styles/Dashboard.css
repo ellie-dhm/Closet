@@ -1,0 +1,215 @@
+/* ---------- layout ---------- */
+.dashboard {
+  display: grid;
+  gap: 1.5rem;
+}
+.dashboard h2 {
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.stat-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+}
+.chart-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+.chart-card--wide {
+  grid-column: 1 / -1;
+}
+
+/* ---------- cards (same language as .item-card) ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s;
+  animation: dash-card-in 0.35s ease backwards;
+}
+
+/* staggered entrance */
+.stat-grid > :nth-child(2) {
+  animation-delay: 0.05s;
+}
+.stat-grid > :nth-child(3) {
+  animation-delay: 0.1s;
+}
+.stat-grid > :nth-child(4) {
+  animation-delay: 0.15s;
+}
+.chart-grid > :nth-child(1) {
+  animation-delay: 0.2s;
+}
+.chart-grid > :nth-child(2) {
+  animation-delay: 0.25s;
+}
+.chart-grid > :nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes dash-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* stat cards lift like wardrobe cards */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+.stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
+/* chart cards: a gentler hover (no movement, so tooltips don't jitter) */
+.chart-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--muted);
+}
+.chart-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+.chart-box {
+  width: 100%;
+  height: 300px; /* ResponsiveContainer needs a sized parent */
+}
+
+/* dimmed while new data loads */
+.is-refreshing .card {
+  opacity: 0.6;
+}
+
+/* ---------- filters (same feel as the wardrobe FilterBar) ---------- */
+.dash-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 -1.25rem; /* bleed into .app's side padding */
+  padding: 0.75rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.dash-filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.dash-filters select,
+.dash-filters input[type="date"] {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.dash-filters select:hover,
+.dash-filters input[type="date"]:hover {
+  border-color: var(--muted);
+}
+.dash-filters select:focus,
+.dash-filters input[type="date"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(28, 27, 25, 0.08);
+}
+.dash-filters input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+.dash-filters__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Recharts, re-skinned with your tokens ---------- */
+.recharts-cartesian-grid line {
+  stroke: var(--border);
+}
+.recharts-cartesian-axis-tick-value,
+.recharts-legend-item-text {
+  fill: var(--muted);
+  font-size: 0.8rem;
+}
+.recharts-cartesian-axis-line,
+.recharts-cartesian-axis-tick-line {
+  stroke: var(--border);
+}
+/* the tooltip sets inline styles, hence !important */
+.recharts-default-tooltip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow);
+  font-size: 0.85rem;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 800px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+  .chart-box {
+    height: 260px;
+  }
+}
+@media (max-width: 420px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+    transition: none;
+  }
+}
